@@ -1,56 +1,146 @@
-# **Finding Lane Lines on the Road** 
-[![Udacity - Self-Driving Car NanoDegree](https://s3.amazonaws.com/udacity-sdc/github/shield-carnd.svg)](http://www.udacity.com/drive)
+# **Finding Lane Lines on the Road**
 
-<img src="examples/laneLines_thirdPass.jpg" width="480" alt="Combined Image" />
 
-Overview
+## Goals
+
+**Finding Lane Lines on the Road**
+
+The goals / steps of this project are the following:
+* Make a pipeline that finds lane lines on the road
+* Reflect on your work in a written report
+
+<figure>
+ <img src="examples/line-segments-example.jpg" width="380" alt="Combined Image" />
+ <figcaption>
+ <p></p> 
+ <p style="text-align: center;"> Your output should look something like this (above) after detecting line segments using the helper functions below </p> 
+ </figcaption>
+</figure>
+ <p></p> 
+<figure>
+ <img src="examples/laneLines_thirdPass.jpg" width="380" alt="Combined Image" />
+ <figcaption>
+ <p></p> 
+ <p style="text-align: center;"> Your goal is to connect/average/extrapolate line segments to get output like this</p> 
+ </figcaption>
+</figure>
+
 ---
 
-When we drive, we use our eyes to decide where to go.  The lines on the road that show us where the lanes are act as our constant reference for where to steer the vehicle.  Naturally, one of the first things we would like to do in developing a self-driving car is to automatically detect lane lines using an algorithm.
+## Description
 
-In this project you will detect lane lines in images using Python and OpenCV.  OpenCV means "Open-Source Computer Vision", which is a package that has many useful tools for analyzing images.  
+**My Pipeline consists of 8 steps**
 
-To complete the project, two files will be submitted: a file containing project code and a file containing a brief write up explaining your solution. We have included template files to be used both for the [code](https://github.com/udacity/CarND-LaneLines-P1/blob/master/P1.ipynb) and the [writeup](https://github.com/udacity/CarND-LaneLines-P1/blob/master/writeup_template.md).The code file is called P1.ipynb and the writeup template is writeup_template.md 
+### Step 1: Identifying Best Color Scale
 
-To meet specifications in the project, take a look at the requirements in the [project rubric](https://review.udacity.com/#!/rubrics/322/view)
+We can change the color scale of an image file in many ways to best suit our needs. In this project, the color scale had to be chosen to distinguish lane lines from the rest of the image. Converting into grayscale is a common option. However, grayscale image fails to distingusih beetween lane lines and other behavioral features of image like shadows. So other scales to which the RGB image can be converted using OpenCV are HLS, Bayer, YCrCb.jpeg and HSV etc. Since we need png files for video processing HLS conversion turned to be the best scale for segregating white and yellow lane lines from rest of the image.
 
-
-Creating a Great Writeup
----
-For this project, a great writeup should provide a detailed response to the "Reflection" section of the [project rubric](https://review.udacity.com/#!/rubrics/322/view). There are three parts to the reflection:
-
-1. Describe the pipeline
-
-2. Identify any shortcomings
-
-3. Suggest possible improvements
-
-We encourage using images in your writeup to demonstrate how your pipeline works.  
-
-All that said, please be concise!  We're not looking for you to write a book here: just a brief description.
-
-You're not required to use markdown for your writeup.  If you use another method please just submit a pdf of your writeup. Here is a link to a [writeup template file](https://github.com/udacity/CarND-LaneLines-P1/blob/master/writeup_template.md). 
+<figure>
+ <img src="test_images_output/hls_image/whiteCarLaneSwitch.jpg" width="800" alt="Combined Image" />
+ <img src="test_images_output/hls_image/solidYellowLeft.jpg" width="800" alt="Combined Image" />
+ <img src="test_images_output/hls_image/solidYellowCurve2.jpg" width="800" alt="Combined Image" />
+</figure>
 
 
-The Project
----
 
-## If you have already installed the [CarND Term1 Starter Kit](https://github.com/udacity/CarND-Term1-Starter-Kit/blob/master/README.md) you should be good to go!   If not, you should install the starter kit to get started on this project. ##
+### Step 2: Applying White Yellow Mask on image
 
-**Step 1:** Set up the [CarND Term1 Starter Kit](https://classroom.udacity.com/nanodegrees/nd013/parts/fbf77062-5703-404e-b60c-95b78b2f3f9e/modules/83ec35ee-1e02-48a5-bdb7-d244bd47c2dc/lessons/8c82408b-a217-4d09-b81d-1bda4c6380ef/concepts/4f1870e0-3849-43e4-b670-12e6f2d4b7a7) if you haven't already.
+Masking an image means selecting the parts of image with the given color threshold and rest all other pixels are turned to 0 or black. This step helps in segregating the lane lines in the colored image itself which will decrease the noise in the later stages of processing.
 
-**Step 2:** Open the code in a Jupyter Notebook
+<figure>
+ <img src="test_images_output/white_yellow/whiteCarLaneSwitch.jpg" width="800" alt="Combined Image" />
+ <img src="test_images_output/white_yellow/solidYellowLeft.jpg" width="800" alt="Combined Image" />
+ <img src="test_images_output/white_yellow/solidYellowCurve2.jpg" width="800" alt="Combined Image" />
+</figure>
 
-You will complete the project code in a Jupyter notebook.  If you are unfamiliar with Jupyter Notebooks, check out [Udacity's free course on Anaconda and Jupyter Notebooks](https://classroom.udacity.com/courses/ud1111) to get started.
+### Step 3: Grayscale conversion
 
-Jupyter is an Ipython notebook where you can run blocks of code and see results interactively.  All the code for this project is contained in a Jupyter notebook. To start Jupyter in your browser, use terminal to navigate to your project directory and then run the following command at the terminal prompt (be sure you've activated your Python 3 carnd-term1 environment as described in the [CarND Term1 Starter Kit](https://github.com/udacity/CarND-Term1-Starter-Kit/blob/master/README.md) installation instructions!):
+Gray Scale version of the pre-processed image looks similar to these images for most part of the video.
 
-`> jupyter notebook`
+<figure>
+ <img src="test_images_output/grayscale_image/whiteCarLaneSwitch.jpg" width="800" alt="Combined Image" />
+ <img src="test_images_output/grayscale_image/solidYellowLeft.jpg" width="800" alt="Combined Image" />
+ <img src="test_images_output/grayscale_image/solidYellowCurve2.jpg" width="800" alt="Combined Image" />
+</figure>
 
-A browser window will appear showing the contents of the current directory.  Click on the file called "P1.ipynb".  Another browser window will appear displaying the notebook.  Follow the instructions in the notebook to complete the project.  
+### Step 4: Gaussian Smoothing
 
-**Step 3:** Complete the project and submit both the Ipython notebook and the project writeup
+Gaussian smoothing kernel is used for smoothing the image so that there is no sudden and discontinuous change in the image which will inturn make canny edge detection tough due to many discontinuities on graph. However, canny operator has its own smoothing kernel of size 3. But still a smoothing kernel gives user the choice to alter the smoothing . A kernel of size (5X5) was used for smoothing. Smoothing which larger kernels decreases gradient change across the area of image which can be harmful and useful depending on the requirements.
 
-## How to write a README
-A well written README file can enhance your project and portfolio.  Develop your abilities to create professional README files by completing [this free course](https://www.udacity.com/course/writing-readmes--ud777).
+<figure>
+ <img src="test_images_output/Gaussian_smooth_image/whiteCarLaneSwitch.jpg" width="800" alt="Combined Image" />
+ <img src="test_images_output/Gaussian_smooth_image/solidYellowLeft.jpg" width="800" alt="Combined Image" />
+ <img src="test_images_output/Gaussian_smooth_image/solidYellowCurve2.jpg" width="800" alt="Combined Image" />
+</figure>
 
+### Step 5: Canny Edge Detection
+
+OpenCV has predefined function `canny()` for detecting edges in an image based on canny's technique. It makes areas with gradient change in a given threshold be defined as edge by thinning to the peak of change. Image after canny edge detection looks like these images.
+
+<figure>
+ <img src="test_images_output/canny_image/whiteCarLaneSwitch.jpg" width="800" alt="Combined Image" />
+ <img src="test_images_output/canny_image/solidYellowLeft.jpg" width="800" alt="Combined Image" />
+ <img src="test_images_output/canny_image/solidYellowCurve2.jpg" width="800" alt="Combined Image" />
+</figure>
+
+### Step 6: Region of Interest Selection
+
+OpenCV provides `fillPoly()` function to define a polygon of given size and shape in a boundary. This function is used to apply a trianguar mask over image and only highlight the part of image which best fits the lane dimensions from image viewpoint given the lane has low gradient change.
+
+<figure>
+ <img src="test_images_output/roi_image/whiteCarLaneSwitch.jpg" width="800" alt="Combined Image" />
+ <img src="test_images_output/roi_image/solidYellowLeft.jpg" width="800" alt="Combined Image" />
+ <img src="test_images_output/roi_image/solidYellowCurve2.jpg" width="800" alt="Combined Image" />
+</figure>
+
+### Step 7: Hough Line Transform 
+
+It takes a canny transform of image as input and draws solid lines marking the canny edges on it of desired pixel and returns it as hough transform of image. Here, a reduced canny image is passed as input assuming that the lines in the region of interest are lane lines.
+
+<figure>
+ <img src="test_images_output/hough_transform_img/whiteCarLaneSwitch.jpg" width="800" alt="Combined Image" />
+ <img src="test_images_output/hough_transform_img/solidYellowLeft.jpg" width="800" alt="Combined Image" />
+ <img src="test_images_output/hough_transform_img/solidYellowCurve2.jpg" width="800" alt="Combined Image" />
+</figure>
+
+### Step 8: Continuous Lane Marking
+
+`HoughLinesP()` returns an image with all the possible lines with given parameters and the coordinates of the lines as well. This data is used to make a mean left and right lane of a given thickness on image using slope intercepts of lines and extrapolating for a mean line out of all the lines based on their gradients (positive means right, negative means left). To avoid conditions of vanishing gradients still present in the processed feed, only lanes with gradients are marked on image.
+
+<figure>
+ <img src="test_images_output/solid_line_image/whiteCarLaneSwitch.jpg" width="800" alt="Combined Image" />
+ <img src="test_images_output/solid_line_image/solidYellowLeft.jpg" width="800" alt="Combined Image" />
+ <img src="test_images_output/solid_line_image/solidYellowCurve2.jpg" width="800" alt="Combined Image" />
+</figure>
+
+## Results on Video Feeds
+
+Video feeds for the 3 challenges given in the project are linked below. Drawing lines throughout snaps of the video wherever the pipeline returns a marked up image helps in creating lane lines on the video as a whole. This can be used for finding lane lines in an online fashion.
+
+[Solid White Right](./test_videos_output/solidWhiteRight.mp4)
+
+[Solid Yellow Left](./test_videos_output/solidYellowLeft.mp4)
+
+[Challenge Video](./test_videos_output/challenge.mp4)
+
+## Potential Shortcomings
+
+1. The pipeline can be used for detection of lane lines on a straight road very efficiently. However, it will prove inefficient on roads which are not so straight for example a street road pr a hilly road. The straight line will be formed by regressing a degree 1 polynomial so the lines may still form on such roads, but they will be a very bad estimate of lane lines. One of the reasons being the left bending lines on the right lane along a right turning road will be added to left lane category and thus regressor forming the lane will have wrong inputs for drawing the single thick lane lines.  
+
+2. The pipeline can be used on fairly horizontal roads without gradient because the paramenters for selecting region of interest is a hard bound based on the fact that horizon in every image will be near the center of image. An image where road is sloping the pipeline may detect lane across a longer or shorter distance and with many anomalies based on various factors.
+
+3. Light conditions plays a very important role in image processing for lane detection as colors are percieved variedly by the computer under a fairly different light availability which can be caused due to weather change, trees, shadows, diurnal change etc. Thus it gives computational power to identify lanes a very small share of all the conditional possibilities faced by human while driving, which is to say the pipeline will fail with change in light conditions. 
+
+4. What if there are no lane lines on the street! 
+
+## Possible Improvements
+
+1. Dynamic region selection based on gradient of road can be implemented to only keep lane lines in region of interest for the pipeline.
+
+2. Image can be divided in two halves and lane lines on each half can then be marked.
+
+3. Advanced algorithms to deal with curves along the road should be implemented to make the pipeline more generic.
+
+4. Bird's eye view of the road can be generated to better understand the surrounding of the self driving car. 
+
+5. Advanced sensors and sensor fusion can be used to cover a large area of conditional states during driving a car. 
